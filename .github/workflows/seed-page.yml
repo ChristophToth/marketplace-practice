@@ -1,0 +1,29 @@
+name: seed-page
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  seed:
+    if: ${{ github.run_number == 1 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add the practice page
+        run: |
+          curl -fsSL -o index.html "https://raw.githubusercontent.com/ChristophToth/christoth-ai/cursor/marketplace-practice-ac1d/public/marketplace-practice.html"
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("index.html")
+          t = p.read_text()
+          needle = '<meta name="viewport" content="width=device-width,initial-scale=1">'
+          if 'name="robots"' not in t:
+              t = t.replace(needle, needle + '<meta name="robots" content="noindex">', 1)
+              p.write_text(t)
+          PY
+          git config user.name "ChristophToth"
+          git config user.email "108372184+ChristophToth@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add the practice page"
+          git push
